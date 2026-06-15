@@ -4,20 +4,23 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>4YE - Brand Intelligence Preview Â· Raw Data Club</title>
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,300;0,400;0,700;0,900;1,700&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <style>
   :root {
-    --bg: #0c0b08;
-    --surface: #131209;
-    --surface2: #1c1a10;
-    --border: #2a2718;
-    --cream: #e8e0cc;
-    --muted: #6a6450;
-    --amber: #d4a832;
-    --amber2: #f0c840;
-    --red: #c84030;
-    --green: #5fa66d;
+    --bg: #0B0B0C;
+    --surface: #131315;
+    --surface2: #18181A;
+    --border: #222224;
+    --cream: #EAE6DF;
+    --muted: #8A8580;
+    --amber: #C5A059;
+    --amber2: #D4AF37;
+    --red: #B22222;
+    --green: #C5A059;
+    --font-display: 'Space Grotesk', 'Inter', Arial, sans-serif;
+    --font-body: 'Inter', Arial, sans-serif;
+    --font-mono: 'Space Mono', 'JetBrains Mono', Consolas, monospace;
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -25,7 +28,7 @@
   body {
     background: var(--bg);
     color: var(--cream);
-    font-family: 'DM Mono', monospace;
+    font-family: var(--font-body);
     min-height: 100vh;
     position: relative;
     overflow-x: hidden;
@@ -75,24 +78,24 @@
 
   .eyebrow { font-size: 9px; letter-spacing: 0.38em; color: var(--muted); text-transform: uppercase; margin-bottom: 12px; }
   .title {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-weight: 900;
+    font-family: var(--font-display);
+    font-weight: 600;
     font-size: 80px;
     line-height: 0.85;
     color: var(--cream);
-    letter-spacing: 0.02em;
+    letter-spacing: 0;
     text-transform: uppercase;
   }
-  .title .sub { display: block; font-size: 44px; color: var(--amber); font-style: italic; font-weight: 700; letter-spacing: 0.04em; }
+  .title .sub { display: block; font-size: 44px; color: var(--amber); font-style: normal; font-weight: 500; letter-spacing: 0; }
   .header-right { text-align: right; font-size: 9px; letter-spacing: 0.15em; color: var(--muted); line-height: 2.2; }
   .preview-badge { display: inline-block; color: var(--amber); font-size: 9px; letter-spacing: 0.1em; border: 1px solid var(--amber); padding: 2px 8px; margin-top: 4px; }
   .header-meta { display: flex; flex-wrap: wrap; gap: 32px; }
   .meta-item { font-size: 9px; letter-spacing: 0.2em; color: var(--muted); text-transform: uppercase; }
-  .meta-item strong { display: block; font-family: 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 700; color: var(--cream); letter-spacing: 0.06em; text-transform: none; margin-top: 2px; }
+  .meta-item strong { display: block; font-family: var(--font-mono); font-size: 15px; font-weight: 700; color: var(--cream); letter-spacing: 0; text-transform: none; margin-top: 2px; }
 
   .ctx-banner {
     background: var(--surface);
-    border-left: 3px solid var(--amber);
+    border-left: 1px solid var(--amber);
     padding: 20px 24px;
     margin-bottom: 40px;
     opacity: 0;
@@ -103,10 +106,11 @@
   .ctx-text span { color: var(--amber); }
 
   .kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2px; margin-bottom: 40px; opacity: 0; animation: fadeUp 0.8s ease 0.12s forwards; }
-  .kpi { background: var(--surface); padding: 22px 18px; position: relative; }
-  .kpi::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 2px; background: var(--amber); }
+  .kpi { background: var(--surface); border: 1px solid var(--border); padding: 22px 18px; position: relative; transition: all 0.2s ease; }
+  .kpi:hover { border-color: var(--amber); transform: translateY(-2px); background: var(--surface2); }
+  .kpi::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 1px; background: var(--amber); }
   .kpi-label { font-size: 8px; letter-spacing: 0.3em; color: var(--muted); text-transform: uppercase; margin-bottom: 12px; }
-  .kpi-val { font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: 48px; line-height: 1; color: var(--cream); letter-spacing: 0.02em; margin-bottom: 4px; }
+  .kpi-val { font-family: var(--font-mono); font-weight: 700; font-size: 48px; line-height: 1; color: var(--cream); letter-spacing: 0; margin-bottom: 4px; }
   .kpi-val .pre { font-size: 18px; color: var(--amber); font-weight: 400; }
   .kpi-note { font-size: 9px; color: var(--muted); line-height: 1.5; }
   .kpi.alert .kpi-val { color: var(--amber); }
@@ -116,9 +120,10 @@
 
   .chart-grid { display: grid; grid-template-columns: 1.2fr .8fr; gap: 2px; margin-bottom: 40px; opacity: 0; animation: fadeUp 0.8s ease 0.22s forwards; }
   .chart-grid.three { grid-template-columns: repeat(3, 1fr); }
-  .panel { background: var(--surface); padding: 24px; min-width: 0; }
+  .panel { background: var(--surface); border: 1px solid var(--border); padding: 24px; min-width: 0; transition: all 0.2s ease; }
+  .panel:hover { border-color: var(--amber); transform: translateY(-2px); background: var(--surface2); }
   .panel-title { font-size: 8px; letter-spacing: 0.3em; color: var(--amber); text-transform: uppercase; margin-bottom: 16px; }
-  .chart-wrap { position: relative; height: 280px; background: #0f0d08; border: 1px solid var(--border); padding: 8px; }
+  .chart-wrap { position: relative; height: 280px; background: #0B0B0C; border: 1px solid var(--border); padding: 8px; }
   .chart-wrap.sm { height: 240px; }
   .chart-wrap canvas { width: 100%; height: 100%; }
   .chart-fallback { display: none; gap: 8px; color: var(--muted); font-size: 9px; line-height: 1.4; margin-top: 10px; }
@@ -131,10 +136,10 @@
   .method-note span { color: var(--cream); }
 
   .insights { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; margin-bottom: 40px; opacity: 0; animation: fadeUp 0.8s ease 0.32s forwards; }
-  .insight { background: var(--surface); padding: 22px; border-top: 2px solid transparent; }
+  .insight { background: var(--surface); padding: 22px; border-top: 1px solid transparent; }
   .insight.gold { border-top-color: var(--amber); }
   .insight-tag { font-size: 8px; letter-spacing: 0.25em; color: var(--amber); text-transform: uppercase; margin-bottom: 10px; }
-  .insight-num { font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: 52px; line-height: 1; color: var(--cream); letter-spacing: 0.02em; margin-bottom: 8px; }
+  .insight-num { font-family: var(--font-mono); font-weight: 700; font-size: 52px; line-height: 1; color: var(--cream); letter-spacing: 0; margin-bottom: 8px; }
   .insight-num sup { font-size: 16px; color: var(--amber); font-weight: 400; }
   .insight-num.amber { color: var(--amber); }
   .insight-desc { font-size: 10px; color: var(--muted); line-height: 1.75; }
@@ -142,7 +147,7 @@
   .eco-grid, .oport-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; margin-bottom: 40px; opacity: 0; animation: fadeUp 0.8s ease 0.4s forwards; }
   .eco-card, .oport-card { background: var(--surface); padding: 22px; }
   .eco-card-tag, .oport-num { font-size: 8px; letter-spacing: 0.3em; color: var(--muted); text-transform: uppercase; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
-  .eco-card-title, .oport-title { font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: 21px; color: var(--cream); text-transform: uppercase; letter-spacing: 0.04em; line-height: 1.1; margin-bottom: 12px; }
+  .eco-card-title, .oport-title { font-family: var(--font-display); font-weight: 600; font-size: 21px; color: var(--cream); text-transform: uppercase; letter-spacing: 0; line-height: 1.1; margin-bottom: 12px; }
   .eco-card-body, .oport-body { font-size: 10px; color: var(--muted); line-height: 1.75; }
   .eco-card-body span { color: var(--cream); }
   .oport-action { font-size: 9px; color: var(--amber); padding-top: 12px; border-top: 1px solid var(--border); line-height: 1.6; margin-top: 16px; }
@@ -150,13 +155,38 @@
   .locked { background: var(--surface); border: 1px dashed var(--border); padding: 22px 28px; margin-bottom: 40px; display: flex; justify-content: space-between; align-items: center; opacity: 0; animation: fadeUp 0.8s ease 0.56s forwards; }
   .locked-label { font-size: 8px; letter-spacing: 0.25em; color: var(--muted); text-transform: uppercase; margin-bottom: 8px; }
   .locked-title { font-size: 11px; color: var(--muted); line-height: 1.6; max-width: 660px; }
-  .locked-count { font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: 52px; color: var(--border); letter-spacing: 0.03em; flex-shrink: 0; margin-left: 24px; }
+  .locked-count { font-family: var(--font-mono); font-weight: 700; font-size: 52px; color: var(--border); letter-spacing: 0; flex-shrink: 0; margin-left: 24px; }
 
   .footer { border-top: 1px solid var(--border); padding-top: 24px; display: flex; justify-content: space-between; align-items: flex-end; opacity: 0; animation: fadeUp 0.8s ease 0.64s forwards; }
   .footer-meta { font-size: 8px; color: var(--muted); letter-spacing: 0.14em; line-height: 2.2; }
   .footer-brand { text-align: right; }
-  .footer-brand-name { font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: 28px; color: var(--cream); letter-spacing: 0.08em; text-transform: uppercase; }
+  .footer-brand-name { font-family: var(--font-display); font-weight: 600; font-size: 28px; color: var(--cream); letter-spacing: 0; text-transform: uppercase; }
   .footer-brand-sub { font-size: 8px; letter-spacing: 0.22em; color: var(--muted); margin-top: 4px; }
+
+  .eyebrow,
+  .header-right,
+  .preview-badge,
+  .meta-item,
+  .ctx-label,
+  .kpi-label,
+  .sh,
+  .panel-title,
+  .insight-tag,
+  .eco-card-tag,
+  .oport-num,
+  .locked-label,
+  .footer-brand-sub {
+    font-family: var(--font-display);
+    font-weight: 500;
+    letter-spacing: 0;
+  }
+
+  .footer-meta,
+  .kpi-note,
+  .method-note {
+    font-family: var(--font-mono);
+    letter-spacing: 0;
+  }
 
   @media (max-width: 768px) {
     .wrapper { padding: 32px 20px; }
@@ -326,14 +356,15 @@
 const chartData = {"categories":[{"label":"Signature Zip Hoodie","count":5,"avg":160},{"label":"Beanies","count":5,"avg":51},{"label":"Hats","count":4,"avg":21.25},{"label":"Signature Wide Pant","count":4,"avg":130},{"label":"Scarves","count":3,"avg":16.67},{"label":"Tanks","count":2,"avg":40},{"label":"Waffle Top","count":2,"avg":45},{"label":"Rhinestone Hoodie","count":2,"avg":155},{"label":"Knit Track Jacket","count":2,"avg":55},{"label":"Mesh Jersey","count":1,"avg":50},{"label":"Tees","count":1,"avg":50}],"priceBands":[{"label":"CAD 15-29","count":7},{"label":"CAD 30-59","count":13},{"label":"CAD 100-139","count":4},{"label":"CAD 140-160","count":7}],"availability":[{"label":"Full availability","count":18},{"label":"Partial availability","count":9},{"label":"Sold out","count":4}],"tiers":[{"label":"Entry Accessories","count":12},{"label":"Signature Set Core","count":9},{"label":"Entry / Sale","count":7},{"label":"Rhinestone","count":3}],"scatter":[{"x":130.00,"y":0,"count":1,"status":"Unavailable","category":"Signature Wide Pant"},{"x":130.00,"y":100,"count":11,"status":"Available","category":"Signature Wide Pant"},{"x":15.00,"y":100,"count":2,"status":"Available","category":"Scarves"},{"x":155.00,"y":0,"count":4,"status":"Unavailable","category":"Rhinestone Hoodie"},{"x":155.00,"y":100,"count":2,"status":"Available","category":"Rhinestone Hoodie"},{"x":160.00,"y":0,"count":1,"status":"Unavailable","category":"Signature Zip Hoodie"},{"x":160.00,"y":100,"count":14,"status":"Available","category":"Signature Zip Hoodie"},{"x":20.00,"y":100,"count":4,"status":"Available","category":"Hats"},{"x":25.00,"y":100,"count":1,"status":"Available","category":"Hats"},{"x":30.00,"y":0,"count":3,"status":"Unavailable","category":"Tanks"},{"x":45.00,"y":0,"count":4,"status":"Unavailable","category":"Beanies"},{"x":45.00,"y":100,"count":4,"status":"Available","category":"Waffle Top"},{"x":50.00,"y":0,"count":2,"status":"Unavailable","category":"Tanks"},{"x":50.00,"y":100,"count":5,"status":"Available","category":"Tanks"},{"x":55.00,"y":0,"count":5,"status":"Unavailable","category":"Knit Track Jacket"},{"x":55.00,"y":100,"count":4,"status":"Available","category":"Beanies"}]};
 
 const palette = {
-  cream: '#e8e0cc',
-  muted: '#6a6450',
-  amber: '#d4a832',
-  amber2: '#f0c840',
-  red: '#c84030',
-  green: '#5fa66d',
-  border: '#2a2718',
-  surface2: '#1c1a10'
+  cream: '#EAE6DF',
+  muted: '#8A8580',
+  amber: '#C5A059',
+  amber2: '#D4AF37',
+  red: '#B22222',
+  green: '#C5A059',
+  border: '#222224',
+  surface: '#131315',
+  surface2: '#18181A'
 };
 
 function cad(value) {
@@ -376,9 +407,9 @@ function prepareFallbackCanvas(canvas) {
   const ctx = canvas.getContext('2d');
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   ctx.clearRect(0, 0, width, height);
-  ctx.fillStyle = '#0f0d08';
+  ctx.fillStyle = '#0B0B0C';
   ctx.fillRect(0, 0, width, height);
-  ctx.font = '9px DM Mono, monospace';
+  ctx.font = '9px Space Mono, JetBrains Mono, Consolas, monospace';
   return { ctx, width, height };
 }
 
@@ -398,7 +429,7 @@ function drawFallbackBars(canvas, rows, mode) {
       const value = Number(row.count) || 0;
       const x = pad + index * ((width - pad * 2) / rows.length) + 5;
       const barH = Math.max(2, (value / max) * chartH);
-      ctx.fillStyle = '#1c1a10';
+      ctx.fillStyle = palette.surface2;
       ctx.fillRect(x, height - pad - chartH, barW, chartH);
       ctx.fillStyle = index === 1 ? palette.amber2 : palette.amber;
       ctx.fillRect(x, height - pad - barH, barW, barH);
@@ -424,7 +455,7 @@ function drawFallbackBars(canvas, rows, mode) {
     const barW = Math.max(3, (value / max) * barMax);
     ctx.fillStyle = palette.cream;
     ctx.fillText(String(row.label).slice(0, width > 520 ? 24 : 15), 8, y + 10);
-    ctx.fillStyle = '#1c1a10';
+    ctx.fillStyle = palette.surface2;
     ctx.fillRect(labelW, y, barMax, 8);
     ctx.fillStyle = index < 2 ? palette.amber : palette.muted;
     ctx.fillRect(labelW, y, barW, 8);
@@ -455,11 +486,11 @@ function drawFallbackDoughnut(canvas, rows) {
     start += slice;
   });
   ctx.fillStyle = palette.cream;
-  ctx.font = '26px Barlow Condensed, sans-serif';
+  ctx.font = '26px Space Mono, JetBrains Mono, Consolas, monospace';
   ctx.textAlign = 'center';
   ctx.fillText(String(total), cx, cy + 8);
   ctx.textAlign = 'left';
-  ctx.font = '9px DM Mono, monospace';
+  ctx.font = '9px Space Mono, JetBrains Mono, Consolas, monospace';
   rows.forEach((row, index) => {
     const y = 28 + index * 20;
     ctx.fillStyle = colors[index] || palette.muted;
@@ -486,35 +517,22 @@ function drawFallbackScatter(canvas, rows) {
 
   ctx.strokeStyle = palette.border;
   ctx.lineWidth = 1;
-  [30, 70, 110, 150].forEach(value => {
-    const x = px(value);
-    ctx.beginPath();
-    ctx.moveTo(x, pad);
-    ctx.lineTo(x, height - pad);
-    ctx.stroke();
-  });
-  [0, 100].forEach(value => {
-    const y = py(value);
-    ctx.beginPath();
-    ctx.moveTo(pad, y);
-    ctx.lineTo(width - pad, y);
-    ctx.stroke();
-  });
+  ctx.strokeRect(pad, pad, width - pad * 2, height - pad * 2);
 
   rows.forEach(row => {
     const x = px(Number(row.x));
     const y = py(Number(row.y));
     const radius = Math.max(4, Math.min(15, Math.sqrt(Number(row.count) || 1) * 3));
     ctx.beginPath();
-    ctx.fillStyle = row.status === 'Available' ? 'rgba(95,166,109,.82)' : 'rgba(200,64,48,.86)';
-    ctx.strokeStyle = 'rgba(232,224,204,.25)';
+    ctx.fillStyle = row.status === 'Available' ? 'rgba(197,160,89,.92)' : 'rgba(178,34,34,.88)';
+    ctx.strokeStyle = 'rgba(234,230,223,.22)';
     ctx.arc(x, y, radius, 0, Math.PI * 2);
     ctx.fill();
     ctx.stroke();
   });
 
   ctx.fillStyle = palette.muted;
-  ctx.font = '9px DM Mono, monospace';
+  ctx.font = '9px Space Mono, JetBrains Mono, Consolas, monospace';
   ctx.fillText('unavailable', pad, py(0) - 7);
   ctx.fillText('available', pad, py(100) - 7);
   ctx.fillText('CAD price', width - 86, height - 9);
@@ -532,13 +550,13 @@ function drawCharts() {
 
   Chart.defaults.color = palette.muted;
   Chart.defaults.borderColor = palette.border;
-  Chart.defaults.font.family = 'DM Mono, monospace';
+  Chart.defaults.font.family = 'Space Mono, JetBrains Mono, Consolas, monospace';
 
   const commonPlugins = {
     legend: { display: false },
     tooltip: {
       displayColors: false,
-      backgroundColor: '#131209',
+      backgroundColor: palette.surface,
       borderColor: palette.border,
       borderWidth: 1,
       titleColor: palette.cream,
@@ -562,8 +580,8 @@ function drawCharts() {
       indexAxis: 'y',
       plugins: commonPlugins,
       scales: {
-        x: { grid: { color: palette.border }, ticks: { precision: 0 } },
-        y: { grid: { display: false }, ticks: { color: palette.cream } }
+        x: { grid: { display: false }, border: { color: palette.border }, ticks: { precision: 0 } },
+        y: { grid: { display: false }, border: { color: palette.border }, ticks: { color: palette.cream } }
       }
     }
   });
@@ -584,7 +602,7 @@ function drawCharts() {
       plugins: commonPlugins,
       scales: {
         x: { grid: { display: false }, ticks: { color: palette.cream } },
-        y: { grid: { color: palette.border }, ticks: { precision: 0 } }
+        y: { grid: { display: false }, border: { color: palette.border }, ticks: { precision: 0 } }
       }
     }
   });
@@ -596,7 +614,7 @@ function drawCharts() {
       datasets: [{
         data: chartData.availability.map(row => row.count),
         backgroundColor: [palette.green, palette.amber, palette.red],
-        borderColor: '#131209',
+        borderColor: palette.surface,
         borderWidth: 2
       }]
     },
@@ -619,8 +637,8 @@ function drawCharts() {
       indexAxis: 'y',
       plugins: commonPlugins,
       scales: {
-        x: { grid: { color: palette.border }, ticks: { precision: 0 } },
-        y: { grid: { display: false }, ticks: { color: palette.cream } }
+        x: { grid: { display: false }, border: { color: palette.border }, ticks: { precision: 0 } },
+        y: { grid: { display: false }, border: { color: palette.border }, ticks: { color: palette.cream } }
       }
     }
   });
@@ -630,8 +648,8 @@ function drawCharts() {
     data: {
       datasets: [{
         data: chartData.scatter,
-        backgroundColor: context => context.raw.status === 'Available' ? 'rgba(95,166,109,.8)' : 'rgba(200,64,48,.82)',
-        borderColor: 'rgba(232,224,204,.25)',
+        backgroundColor: context => context.raw.status === 'Available' ? 'rgba(197,160,89,.92)' : 'rgba(178,34,34,.88)',
+        borderColor: 'rgba(234,230,223,.22)',
         borderWidth: 1,
         pointRadius: context => Math.max(4, Math.min(15, Math.sqrt(context.raw.count) * 3)),
         pointHoverRadius: context => Math.max(6, Math.min(18, Math.sqrt(context.raw.count) * 3.4))
@@ -644,7 +662,7 @@ function drawCharts() {
         legend: { display: false },
         tooltip: {
           displayColors: false,
-          backgroundColor: '#131209',
+          backgroundColor: palette.surface,
           borderColor: palette.border,
           borderWidth: 1,
           titleColor: palette.cream,
@@ -656,7 +674,7 @@ function drawCharts() {
         }
       },
       scales: {
-        x: { min: 10, max: 170, ticks: { callback: value => '$' + value }, grid: { color: palette.border } },
+        x: { min: 10, max: 170, ticks: { callback: value => '$' + value }, grid: { display: false }, border: { color: palette.border } },
         y: {
           min: -10,
           max: 110,
@@ -664,7 +682,8 @@ function drawCharts() {
             stepSize: 50,
             callback: value => value === 100 ? 'available' : value === 0 ? 'unavailable' : ''
           },
-          grid: { color: palette.border }
+          grid: { display: false },
+          border: { color: palette.border }
         }
       }
     }
