@@ -1,0 +1,679 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>4YE - Brand Intelligence Preview Â· Raw Data Club</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,300;0,400;0,700;0,900;1,700&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #0c0b08;
+    --surface: #131209;
+    --surface2: #1c1a10;
+    --border: #2a2718;
+    --cream: #e8e0cc;
+    --muted: #6a6450;
+    --amber: #d4a832;
+    --amber2: #f0c840;
+    --red: #c84030;
+    --green: #5fa66d;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--cream);
+    font-family: 'DM Mono', monospace;
+    min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.055'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.08) 3px, rgba(0,0,0,0.08) 4px);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrapper {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 56px 48px;
+    position: relative;
+    z-index: 1;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(14px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .header { margin-bottom: 44px; opacity: 0; animation: fadeUp 0.8s ease forwards; }
+  .header-top {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: end;
+    gap: 24px;
+    padding-bottom: 22px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 18px;
+  }
+
+  .eyebrow { font-size: 9px; letter-spacing: 0.38em; color: var(--muted); text-transform: uppercase; margin-bottom: 12px; }
+  .title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: 80px;
+    line-height: 0.85;
+    color: var(--cream);
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+  .title .sub { display: block; font-size: 44px; color: var(--amber); font-style: italic; font-weight: 700; letter-spacing: 0.04em; }
+  .header-right { text-align: right; font-size: 9px; letter-spacing: 0.15em; color: var(--muted); line-height: 2.2; }
+  .preview-badge { display: inline-block; color: var(--amber); font-size: 9px; letter-spacing: 0.1em; border: 1px solid var(--amber); padding: 2px 8px; margin-top: 4px; }
+  .header-meta { display: flex; flex-wrap: wrap; gap: 32px; }
+  .meta-item { font-size: 9px; letter-spacing: 0.2em; color: var(--muted); text-transform: uppercase; }
+  .meta-item strong { display: block; font-family: 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 700; color: var(--cream); letter-spacing: 0.06em; text-transform: none; margin-top: 2px; }
+
+  .ctx-banner {
+    background: var(--surface);
+    border-left: 3px solid var(--amber);
+    padding: 20px 24px;
+    margin-bottom: 40px;
+    opacity: 0;
+    animation: fadeUp 0.8s ease 0.05s forwards;
+  }
+  .ctx-label { font-size: 8px; letter-spacing: 0.35em; color: var(--amber); text-transform: uppercase; margin-bottom: 8px; }
+  .ctx-text { font-size: 11px; color: var(--cream); line-height: 1.7; }
+  .ctx-text span { color: var(--amber); }
+
+  .kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2px; margin-bottom: 40px; opacity: 0; animation: fadeUp 0.8s ease 0.12s forwards; }
+  .kpi { background: var(--surface); padding: 22px 18px; position: relative; }
+  .kpi::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 2px; background: var(--amber); }
+  .kpi-label { font-size: 8px; letter-spacing: 0.3em; color: var(--muted); text-transform: uppercase; margin-bottom: 12px; }
+  .kpi-val { font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: 48px; line-height: 1; color: var(--cream); letter-spacing: 0.02em; margin-bottom: 4px; }
+  .kpi-val .pre { font-size: 18px; color: var(--amber); font-weight: 400; }
+  .kpi-note { font-size: 9px; color: var(--muted); line-height: 1.5; }
+  .kpi.alert .kpi-val { color: var(--amber); }
+
+  .sh { font-size: 9px; letter-spacing: 0.32em; color: var(--muted); text-transform: uppercase; margin-bottom: 16px; display: flex; align-items: center; gap: 14px; }
+  .sh::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  .chart-grid { display: grid; grid-template-columns: 1.2fr .8fr; gap: 2px; margin-bottom: 40px; opacity: 0; animation: fadeUp 0.8s ease 0.22s forwards; }
+  .chart-grid.three { grid-template-columns: repeat(3, 1fr); }
+  .panel { background: var(--surface); padding: 24px; min-width: 0; }
+  .panel-title { font-size: 8px; letter-spacing: 0.3em; color: var(--amber); text-transform: uppercase; margin-bottom: 16px; }
+  .chart-wrap { position: relative; height: 280px; background: #0f0d08; border: 1px solid var(--border); padding: 8px; }
+  .chart-wrap.sm { height: 240px; }
+  .chart-wrap canvas { width: 100%; height: 100%; }
+  .chart-fallback { display: none; gap: 8px; color: var(--muted); font-size: 9px; line-height: 1.4; margin-top: 10px; }
+  .fallback-row { display: grid; grid-template-columns: minmax(88px, .9fr) 1.5fr auto; align-items: center; gap: 8px; }
+  .fallback-row span { color: var(--cream); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .fallback-row em { color: var(--amber); font-style: normal; text-align: right; min-width: 20px; }
+  .fallback-track { display: block; height: 7px; background: #0f0d08; border: 1px solid var(--border); overflow: hidden; }
+  .fallback-track b { display: block; height: 100%; background: var(--amber); }
+  .method-note { color: var(--muted); font-size: 9px; line-height: 1.7; margin-top: 12px; }
+  .method-note span { color: var(--cream); }
+
+  .insights { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; margin-bottom: 40px; opacity: 0; animation: fadeUp 0.8s ease 0.32s forwards; }
+  .insight { background: var(--surface); padding: 22px; border-top: 2px solid transparent; }
+  .insight.gold { border-top-color: var(--amber); }
+  .insight-tag { font-size: 8px; letter-spacing: 0.25em; color: var(--amber); text-transform: uppercase; margin-bottom: 10px; }
+  .insight-num { font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: 52px; line-height: 1; color: var(--cream); letter-spacing: 0.02em; margin-bottom: 8px; }
+  .insight-num sup { font-size: 16px; color: var(--amber); font-weight: 400; }
+  .insight-num.amber { color: var(--amber); }
+  .insight-desc { font-size: 10px; color: var(--muted); line-height: 1.75; }
+
+  .eco-grid, .oport-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; margin-bottom: 40px; opacity: 0; animation: fadeUp 0.8s ease 0.4s forwards; }
+  .eco-card, .oport-card { background: var(--surface); padding: 22px; }
+  .eco-card-tag, .oport-num { font-size: 8px; letter-spacing: 0.3em; color: var(--muted); text-transform: uppercase; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+  .eco-card-title, .oport-title { font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: 21px; color: var(--cream); text-transform: uppercase; letter-spacing: 0.04em; line-height: 1.1; margin-bottom: 12px; }
+  .eco-card-body, .oport-body { font-size: 10px; color: var(--muted); line-height: 1.75; }
+  .eco-card-body span { color: var(--cream); }
+  .oport-action { font-size: 9px; color: var(--amber); padding-top: 12px; border-top: 1px solid var(--border); line-height: 1.6; margin-top: 16px; }
+
+  .locked { background: var(--surface); border: 1px dashed var(--border); padding: 22px 28px; margin-bottom: 40px; display: flex; justify-content: space-between; align-items: center; opacity: 0; animation: fadeUp 0.8s ease 0.56s forwards; }
+  .locked-label { font-size: 8px; letter-spacing: 0.25em; color: var(--muted); text-transform: uppercase; margin-bottom: 8px; }
+  .locked-title { font-size: 11px; color: var(--muted); line-height: 1.6; max-width: 660px; }
+  .locked-count { font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: 52px; color: var(--border); letter-spacing: 0.03em; flex-shrink: 0; margin-left: 24px; }
+
+  .footer { border-top: 1px solid var(--border); padding-top: 24px; display: flex; justify-content: space-between; align-items: flex-end; opacity: 0; animation: fadeUp 0.8s ease 0.64s forwards; }
+  .footer-meta { font-size: 8px; color: var(--muted); letter-spacing: 0.14em; line-height: 2.2; }
+  .footer-brand { text-align: right; }
+  .footer-brand-name { font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: 28px; color: var(--cream); letter-spacing: 0.08em; text-transform: uppercase; }
+  .footer-brand-sub { font-size: 8px; letter-spacing: 0.22em; color: var(--muted); margin-top: 4px; }
+
+  @media (max-width: 768px) {
+    .wrapper { padding: 32px 20px; }
+    .title { font-size: 52px; }
+    .title .sub { font-size: 32px; }
+    .header-top, .footer { grid-template-columns: 1fr; display: grid; gap: 16px; }
+    .header-right, .footer-brand { text-align: left; }
+    .kpi-row { grid-template-columns: repeat(2,1fr); }
+    .chart-grid, .chart-grid.three, .insights, .eco-grid, .oport-grid { grid-template-columns: 1fr; }
+    .header-meta { flex-wrap: wrap; gap: 20px; }
+    .locked { align-items: flex-start; flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+<div class="wrapper">
+  <div class="header">
+    <div class="header-top">
+      <div>
+        <div class="eyebrow">Brand Intelligence &middot; Raw Data Club &middot; Preview</div>
+        <div class="title">4YE <span class="sub">Set System - 2026</span></div>
+      </div>
+      <div class="header-right">
+        31 products &middot; 67 variants<br>
+        4 complete coordinated sets<br>
+        extraction: 2026-06-14<br>
+        <span class="preview-badge">PREVIEW - 3 OF 7 INSIGHTS</span>
+      </div>
+    </div>
+    <div class="header-meta">
+      <div class="meta-item">Avg Price <strong>CAD $77.42</strong></div>
+      <div class="meta-item">Entry Level <strong>CAD $15</strong></div>
+      <div class="meta-item">Top Product <strong>CAD $160</strong></div>
+      <div class="meta-item">Variant Availability <strong>70.1%</strong></div>
+    </div>
+  </div>
+
+  <div class="ctx-banner">
+    <div class="ctx-label">Strategic context - updated public catalog</div>
+    <div class="ctx-text">
+      4YE is still more than a streetwear catalog. The updated public data shows a <span>coordinated set system</span> with 4 Hoodie+Pant pairs at CAD $290, a broad entry layer of accessories and sale-priced apparel, and a live availability signal across 67 variants.
+    </div>
+  </div>
+
+  <div class="kpi-row" id="kpiRow">
+    <div class="kpi"><div class="kpi-label">Total Products</div><div class="kpi-val">31</div><div class="kpi-note">excluding one technical color-swatch test item</div></div>
+    <div class="kpi"><div class="kpi-label">Avg Price</div><div class="kpi-val"><span class="pre">$</span>77.42</div><div class="kpi-note">current public catalog</div></div>
+    <div class="kpi alert"><div class="kpi-label">Matched Sets</div><div class="kpi-val">4<sup>x</sup></div><div class="kpi-note">Black/Red, Black/White, Dark Green/White, Red/Black</div></div>
+    <div class="kpi"><div class="kpi-label">Available Variants</div><div class="kpi-val">70.1%</div><div class="kpi-note">47 of 67 variants available</div></div>
+  </div>
+
+  <div class="sh">Catalog charts - generated in JavaScript</div>
+  <div class="chart-grid">
+    <div class="panel">
+      <div class="panel-title">Products by category</div>
+      <div class="chart-wrap"><canvas id="categoryChart"></canvas></div>
+      <div class="chart-fallback" id="categoryFallback"></div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Price distribution</div>
+      <div class="chart-wrap"><canvas id="priceChart"></canvas></div>
+      <div class="chart-fallback" id="priceFallback"></div>
+    </div>
+  </div>
+
+  <div class="chart-grid three">
+    <div class="panel">
+      <div class="panel-title">Availability status</div>
+      <div class="chart-wrap sm"><canvas id="availabilityChart"></canvas></div>
+      <div class="chart-fallback" id="availabilityFallback"></div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Tier architecture</div>
+      <div class="chart-wrap sm"><canvas id="tierChart"></canvas></div>
+      <div class="chart-fallback" id="tierFallback"></div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Variant price x availability</div>
+      <div class="chart-wrap sm"><canvas id="scatterChart"></canvas></div>
+      <div class="chart-fallback" id="scatterFallback"></div>
+      <div class="method-note"><span>Note:</span> Shopify public data exposes availability, not inventory quantity. Y-axis uses 100 = available and 0 = unavailable.</div>
+    </div>
+  </div>
+
+  <div class="sh">Strategic insights - preview</div>
+  <div class="insights">
+    <div class="insight gold">
+      <div class="insight-tag">The central finding</div>
+      <div class="insight-num amber">4<sup>x</sup></div>
+      <div class="insight-desc">complete Hoodie+Pant sets still anchor the catalog. The matching colorways are Black/Red, Black/White, Dark Green/White, Red/Black. This is a merchandising system, not just individual product listings.</div>
+    </div>
+    <div class="insight gold">
+      <div class="insight-tag">Markdown layer</div>
+      <div class="insight-num">17</div>
+      <div class="insight-desc">products show public compare-at pricing above current price. That shifts the current read from pure Signature launch to a mixed catalog of set architecture plus sale/entry conversion.</div>
+    </div>
+    <div class="insight gold">
+      <div class="insight-tag">Availability pressure</div>
+      <div class="insight-num amber">9</div>
+      <div class="insight-desc">products have partial availability across size variants. The next layer of analysis should read colorway and size separately, not just product-level status.</div>
+    </div>
+  </div>
+
+  <div class="sh">Catalog architecture - pillars</div>
+  <div class="eco-grid">
+    <div class="eco-card">
+      <div class="eco-card-tag">Pillar 01 &middot; Core</div>
+      <div class="eco-card-title">The Set System</div>
+      <div class="eco-card-body"><span>4 matched sets</span> create the clearest AOV opportunity: zip hoodie plus wide pant at CAD $290 per colorway.</div>
+    </div>
+    <div class="eco-card">
+      <div class="eco-card-tag">Pillar 02 &middot; Markdown</div>
+      <div class="eco-card-title">Sale as Traffic Layer</div>
+      <div class="eco-card-body"><span>17 products</span> show markdown signals, giving the brand a lower-friction conversion layer without abandoning premium set pricing.</div>
+    </div>
+    <div class="eco-card">
+      <div class="eco-card-tag">Pillar 03 &middot; Entry</div>
+      <div class="eco-card-title">Accessories as the Door</div>
+      <div class="eco-card-body">Scarves, hats and beanies keep the entry point at <span>CAD $15</span>, making the brand accessible before the customer moves into apparel or sets.</div>
+    </div>
+  </div>
+
+  <div class="sh">Opportunities identified</div>
+  <div class="oport-grid" id="oports">
+    <div class="oport-card">
+      <div class="oport-num">Opportunity 01</div>
+      <div class="oport-title">Merchandise the matched sets</div>
+      <div class="oport-body">The product work already exists across 4 colorways. A set landing page, PDP cross-sell and post-purchase recommendation can turn one-piece purchase intent into complete-look AOV.</div>
+      <div class="oport-action">make the set the buying unit, not just an inferred relationship between products</div>
+    </div>
+    <div class="oport-card">
+      <div class="oport-num">Opportunity 02</div>
+      <div class="oport-title">Separate sale from core</div>
+      <div class="oport-body">The current catalog mixes full-price set logic with marked-down jackets, tops and accessories. A cleaner sale architecture would protect premium set perception while still converting entry traffic.</div>
+      <div class="oport-action">use markdown as a funnel layer, not as the headline of the brand system</div>
+    </div>
+    <div class="oport-card">
+      <div class="oport-num">Opportunity 03</div>
+      <div class="oport-title">Track availability by size</div>
+      <div class="oport-body">Partial availability appears in 9 products. That is where the real operational signal lives: not product available/unavailable, but which size and colorway is thinning first.</div>
+      <div class="oport-action">build D0/D+1/D+3 checks around variant availability, especially for set colorways</div>
+    </div>
+  </div>
+
+  <div class="locked">
+    <div>
+      <div class="locked-label">Full analysis available</div>
+      <div class="locked-title">+4 insights &middot; full 31-product catalog map &middot; colorway set matrix &middot; sale/core split &middot; SKU availability watchlist &middot; 30/60/90-day action sequence</div>
+    </div>
+    <div class="locked-count">+4</div>
+  </div>
+
+  <div class="footer">
+    <div class="footer-meta">
+      SOURCE: 4ye.ca &middot; EXTRACTION: 2026-06-14<br>
+      CATALOG: 31 products &middot; 67 variants &middot; 70.1% variant availability<br>
+      METHODOLOGY: Shopify public endpoint + exploratory analysis
+    </div>
+    <div class="footer-brand">
+      <div class="footer-brand-name">Raw Data Club</div>
+      <div class="footer-brand-sub">DATA BEHIND THE CULTURE &middot; @RAWDATACLUB.ARCHIVE</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const chartData = {"categories":[{"label":"Signature Zip Hoodie","count":5,"avg":160},{"label":"Beanies","count":5,"avg":51},{"label":"Hats","count":4,"avg":21.25},{"label":"Signature Wide Pant","count":4,"avg":130},{"label":"Scarves","count":3,"avg":16.67},{"label":"Tanks","count":2,"avg":40},{"label":"Waffle Top","count":2,"avg":45},{"label":"Rhinestone Hoodie","count":2,"avg":155},{"label":"Knit Track Jacket","count":2,"avg":55},{"label":"Mesh Jersey","count":1,"avg":50},{"label":"Tees","count":1,"avg":50}],"priceBands":[{"label":"CAD 15-29","count":7},{"label":"CAD 30-59","count":13},{"label":"CAD 100-139","count":4},{"label":"CAD 140-160","count":7}],"availability":[{"label":"Full availability","count":18},{"label":"Partial availability","count":9},{"label":"Sold out","count":4}],"tiers":[{"label":"Entry Accessories","count":12},{"label":"Signature Set Core","count":9},{"label":"Entry / Sale","count":7},{"label":"Rhinestone","count":3}],"scatter":[{"x":130.00,"y":0,"count":1,"status":"Unavailable","category":"Signature Wide Pant"},{"x":130.00,"y":100,"count":11,"status":"Available","category":"Signature Wide Pant"},{"x":15.00,"y":100,"count":2,"status":"Available","category":"Scarves"},{"x":155.00,"y":0,"count":4,"status":"Unavailable","category":"Rhinestone Hoodie"},{"x":155.00,"y":100,"count":2,"status":"Available","category":"Rhinestone Hoodie"},{"x":160.00,"y":0,"count":1,"status":"Unavailable","category":"Signature Zip Hoodie"},{"x":160.00,"y":100,"count":14,"status":"Available","category":"Signature Zip Hoodie"},{"x":20.00,"y":100,"count":4,"status":"Available","category":"Hats"},{"x":25.00,"y":100,"count":1,"status":"Available","category":"Hats"},{"x":30.00,"y":0,"count":3,"status":"Unavailable","category":"Tanks"},{"x":45.00,"y":0,"count":4,"status":"Unavailable","category":"Beanies"},{"x":45.00,"y":100,"count":4,"status":"Available","category":"Waffle Top"},{"x":50.00,"y":0,"count":2,"status":"Unavailable","category":"Tanks"},{"x":50.00,"y":100,"count":5,"status":"Available","category":"Tanks"},{"x":55.00,"y":0,"count":5,"status":"Unavailable","category":"Knit Track Jacket"},{"x":55.00,"y":100,"count":4,"status":"Available","category":"Beanies"}]};
+
+const palette = {
+  cream: '#e8e0cc',
+  muted: '#6a6450',
+  amber: '#d4a832',
+  amber2: '#f0c840',
+  red: '#c84030',
+  green: '#5fa66d',
+  border: '#2a2718',
+  surface2: '#1c1a10'
+};
+
+function cad(value) {
+  return new Intl.NumberFormat('en-CA', { style: 'currency', currency: 'CAD', maximumFractionDigits: 0 }).format(value);
+}
+
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, char => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  }[char]));
+}
+
+function fallbackList(id, rows, valueKey = 'count') {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const values = rows.map(row => Number(row[valueKey] ?? row.count ?? 0));
+  const max = Math.max(1, ...values);
+  el.style.display = 'grid';
+  el.innerHTML = rows.map(row => {
+    const label = escapeHtml(row.label || row.category || row.status || 'Metric');
+    const rawValue = row[valueKey] ?? row.count ?? '';
+    const value = Number(rawValue) || 0;
+    const width = Math.max(6, Math.round((value / max) * 100));
+    return '<div class="fallback-row"><span>' + label + '</span><i class="fallback-track"><b style="width:' + width + '%"></b></i><em>' + escapeHtml(rawValue) + '</em></div>';
+  }).join('');
+}
+
+function prepareFallbackCanvas(canvas) {
+  if (!canvas || !canvas.getContext) return null;
+  const box = canvas.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
+  const width = Math.max(260, Math.floor(box.width || 320));
+  const height = Math.max(180, Math.floor(box.height || 220));
+  canvas.width = width * dpr;
+  canvas.height = height * dpr;
+  const ctx = canvas.getContext('2d');
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, width, height);
+  ctx.fillStyle = '#0f0d08';
+  ctx.fillRect(0, 0, width, height);
+  ctx.font = '9px DM Mono, monospace';
+  return { ctx, width, height };
+}
+
+function drawFallbackBars(canvas, rows, mode) {
+  const env = prepareFallbackCanvas(canvas);
+  if (!env) return;
+  const ctx = env.ctx;
+  const width = env.width;
+  const height = env.height;
+  const max = Math.max(1, ...rows.map(row => Number(row.count) || 0));
+
+  if (mode === 'vertical') {
+    const pad = 28;
+    const chartH = height - 56;
+    const barW = Math.max(16, (width - pad * 2) / rows.length - 10);
+    rows.forEach((row, index) => {
+      const value = Number(row.count) || 0;
+      const x = pad + index * ((width - pad * 2) / rows.length) + 5;
+      const barH = Math.max(2, (value / max) * chartH);
+      ctx.fillStyle = '#1c1a10';
+      ctx.fillRect(x, height - pad - chartH, barW, chartH);
+      ctx.fillStyle = index === 1 ? palette.amber2 : palette.amber;
+      ctx.fillRect(x, height - pad - barH, barW, barH);
+      ctx.fillStyle = palette.cream;
+      ctx.fillText(String(value), x, height - pad - barH - 6);
+      ctx.fillStyle = palette.muted;
+      ctx.save();
+      ctx.translate(x, height - 9);
+      ctx.rotate(-0.32);
+      ctx.fillText(String(row.label).replace('CAD ', ''), 0, 0);
+      ctx.restore();
+    });
+    return;
+  }
+
+  const top = 14;
+  const labelW = width > 520 ? 138 : 104;
+  const rowH = Math.max(18, Math.min(28, (height - top * 2) / rows.length));
+  rows.forEach((row, index) => {
+    const y = top + index * rowH + 3;
+    const value = Number(row.count) || 0;
+    const barMax = width - labelW - 48;
+    const barW = Math.max(3, (value / max) * barMax);
+    ctx.fillStyle = palette.cream;
+    ctx.fillText(String(row.label).slice(0, width > 520 ? 24 : 15), 8, y + 10);
+    ctx.fillStyle = '#1c1a10';
+    ctx.fillRect(labelW, y, barMax, 8);
+    ctx.fillStyle = index < 2 ? palette.amber : palette.muted;
+    ctx.fillRect(labelW, y, barW, 8);
+    ctx.fillStyle = palette.amber;
+    ctx.fillText(String(value), labelW + barMax + 10, y + 9);
+  });
+}
+
+function drawFallbackDoughnut(canvas, rows) {
+  const env = prepareFallbackCanvas(canvas);
+  if (!env) return;
+  const ctx = env.ctx;
+  const width = env.width;
+  const height = env.height;
+  const total = Math.max(1, rows.reduce((sum, row) => sum + (Number(row.count) || 0), 0));
+  const cx = Math.floor(width * 0.46);
+  const cy = Math.floor(height * 0.48);
+  const radius = Math.min(width, height) * 0.29;
+  const colors = [palette.green, palette.amber, palette.red];
+  let start = -Math.PI / 2;
+  rows.forEach((row, index) => {
+    const slice = ((Number(row.count) || 0) / total) * Math.PI * 2;
+    ctx.beginPath();
+    ctx.arc(cx, cy, radius, start, start + slice);
+    ctx.lineWidth = 18;
+    ctx.strokeStyle = colors[index] || palette.muted;
+    ctx.stroke();
+    start += slice;
+  });
+  ctx.fillStyle = palette.cream;
+  ctx.font = '26px Barlow Condensed, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(String(total), cx, cy + 8);
+  ctx.textAlign = 'left';
+  ctx.font = '9px DM Mono, monospace';
+  rows.forEach((row, index) => {
+    const y = 28 + index * 20;
+    ctx.fillStyle = colors[index] || palette.muted;
+    ctx.fillRect(width - 118, y - 8, 8, 8);
+    ctx.fillStyle = palette.muted;
+    ctx.fillText(String(row.label) + ' ' + String(row.count), width - 104, y);
+  });
+}
+
+function drawFallbackScatter(canvas, rows) {
+  const env = prepareFallbackCanvas(canvas);
+  if (!env) return;
+  const ctx = env.ctx;
+  const width = env.width;
+  const height = env.height;
+
+  const pad = 30;
+  const xMin = 10;
+  const xMax = 170;
+  const yMin = -10;
+  const yMax = 110;
+  const px = value => pad + ((value - xMin) / (xMax - xMin)) * (width - pad * 2);
+  const py = value => height - pad - ((value - yMin) / (yMax - yMin)) * (height - pad * 2);
+
+  ctx.strokeStyle = palette.border;
+  ctx.lineWidth = 1;
+  [30, 70, 110, 150].forEach(value => {
+    const x = px(value);
+    ctx.beginPath();
+    ctx.moveTo(x, pad);
+    ctx.lineTo(x, height - pad);
+    ctx.stroke();
+  });
+  [0, 100].forEach(value => {
+    const y = py(value);
+    ctx.beginPath();
+    ctx.moveTo(pad, y);
+    ctx.lineTo(width - pad, y);
+    ctx.stroke();
+  });
+
+  rows.forEach(row => {
+    const x = px(Number(row.x));
+    const y = py(Number(row.y));
+    const radius = Math.max(4, Math.min(15, Math.sqrt(Number(row.count) || 1) * 3));
+    ctx.beginPath();
+    ctx.fillStyle = row.status === 'Available' ? 'rgba(95,166,109,.82)' : 'rgba(200,64,48,.86)';
+    ctx.strokeStyle = 'rgba(232,224,204,.25)';
+    ctx.arc(x, y, radius, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+  });
+
+  ctx.fillStyle = palette.muted;
+  ctx.font = '9px DM Mono, monospace';
+  ctx.fillText('unavailable', pad, py(0) - 7);
+  ctx.fillText('available', pad, py(100) - 7);
+  ctx.fillText('CAD price', width - 86, height - 9);
+}
+
+function drawCharts() {
+  if (!window.Chart) {
+    drawFallbackBars(document.getElementById('categoryChart'), chartData.categories, 'horizontal');
+    drawFallbackBars(document.getElementById('priceChart'), chartData.priceBands, 'vertical');
+    drawFallbackDoughnut(document.getElementById('availabilityChart'), chartData.availability);
+    drawFallbackBars(document.getElementById('tierChart'), chartData.tiers, 'horizontal');
+    drawFallbackScatter(document.getElementById('scatterChart'), chartData.scatter);
+    return;
+  }
+
+  Chart.defaults.color = palette.muted;
+  Chart.defaults.borderColor = palette.border;
+  Chart.defaults.font.family = 'DM Mono, monospace';
+
+  const commonPlugins = {
+    legend: { display: false },
+    tooltip: {
+      displayColors: false,
+      backgroundColor: '#131209',
+      borderColor: palette.border,
+      borderWidth: 1,
+      titleColor: palette.cream,
+      bodyColor: palette.muted
+    }
+  };
+
+  new Chart(document.getElementById('categoryChart'), {
+    type: 'bar',
+    data: {
+      labels: chartData.categories.map(row => row.label),
+      datasets: [{
+        data: chartData.categories.map(row => row.count),
+        backgroundColor: palette.amber,
+        borderWidth: 0
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      indexAxis: 'y',
+      plugins: commonPlugins,
+      scales: {
+        x: { grid: { color: palette.border }, ticks: { precision: 0 } },
+        y: { grid: { display: false }, ticks: { color: palette.cream } }
+      }
+    }
+  });
+
+  new Chart(document.getElementById('priceChart'), {
+    type: 'bar',
+    data: {
+      labels: chartData.priceBands.map(row => row.label),
+      datasets: [{
+        data: chartData.priceBands.map(row => row.count),
+        backgroundColor: chartData.priceBands.map((_, i) => i === 1 ? palette.amber : palette.muted),
+        borderWidth: 0
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: commonPlugins,
+      scales: {
+        x: { grid: { display: false }, ticks: { color: palette.cream } },
+        y: { grid: { color: palette.border }, ticks: { precision: 0 } }
+      }
+    }
+  });
+
+  new Chart(document.getElementById('availabilityChart'), {
+    type: 'doughnut',
+    data: {
+      labels: chartData.availability.map(row => row.label),
+      datasets: [{
+        data: chartData.availability.map(row => row.count),
+        backgroundColor: [palette.green, palette.amber, palette.red],
+        borderColor: '#131209',
+        borderWidth: 2
+      }]
+    },
+    options: { responsive: true, maintainAspectRatio: false, cutout: '68%', plugins: commonPlugins }
+  });
+
+  new Chart(document.getElementById('tierChart'), {
+    type: 'bar',
+    data: {
+      labels: chartData.tiers.map(row => row.label),
+      datasets: [{
+        data: chartData.tiers.map(row => row.count),
+        backgroundColor: palette.amber,
+        borderWidth: 0
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      indexAxis: 'y',
+      plugins: commonPlugins,
+      scales: {
+        x: { grid: { color: palette.border }, ticks: { precision: 0 } },
+        y: { grid: { display: false }, ticks: { color: palette.cream } }
+      }
+    }
+  });
+
+  new Chart(document.getElementById('scatterChart'), {
+    type: 'scatter',
+    data: {
+      datasets: [{
+        data: chartData.scatter,
+        backgroundColor: context => context.raw.status === 'Available' ? 'rgba(95,166,109,.8)' : 'rgba(200,64,48,.82)',
+        borderColor: 'rgba(232,224,204,.25)',
+        borderWidth: 1,
+        pointRadius: context => Math.max(4, Math.min(15, Math.sqrt(context.raw.count) * 3)),
+        pointHoverRadius: context => Math.max(6, Math.min(18, Math.sqrt(context.raw.count) * 3.4))
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          displayColors: false,
+          backgroundColor: '#131209',
+          borderColor: palette.border,
+          borderWidth: 1,
+          titleColor: palette.cream,
+          bodyColor: palette.muted,
+          callbacks: {
+            title: items => cad(items[0].raw.x),
+            label: context => String(context.raw.count) + ' variants ' + context.raw.status.toLowerCase() + ' - ' + context.raw.category
+          }
+        }
+      },
+      scales: {
+        x: { min: 10, max: 170, ticks: { callback: value => '$' + value }, grid: { color: palette.border } },
+        y: {
+          min: -10,
+          max: 110,
+          ticks: {
+            stepSize: 50,
+            callback: value => value === 100 ? 'available' : value === 0 ? 'unavailable' : ''
+          },
+          grid: { color: palette.border }
+        }
+      }
+    }
+  });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  drawCharts();
+});
+</script>
+</body>
+</html>
